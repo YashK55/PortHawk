@@ -54,7 +54,7 @@ describe('getListeningPorts', () => {
     }
   });
 
-  it('detects a normal listening process on unix', async () => {
+  it('detects a normal listening process on unix via a single process-table call', async () => {
     Object.defineProperty(process, 'platform', { value: 'linux' });
 
     mockedNetworkConnections.mockResolvedValue([
@@ -70,8 +70,7 @@ describe('getListeningPorts', () => {
       },
     ]);
 
-    respondWith('1 node /usr/bin/node server.js\n');
-    respondWith('bash\n');
+    respondWith('4242 1 node /usr/bin/node server.js\n1 0 bash bash\n');
 
     const ports = await getListeningPorts();
 
@@ -85,9 +84,10 @@ describe('getListeningPorts', () => {
         origin: 'unknown',
       },
     ]);
+    expect(mockedExecFile).toHaveBeenCalledTimes(1);
   });
 
-  it('omits a port whose process exited before lookup (race condition)', async () => {
+  it('omits a port whose process exited before the process table was read (race condition)', async () => {
     Object.defineProperty(process, 'platform', { value: 'linux' });
 
     mockedNetworkConnections.mockResolvedValue([
@@ -103,14 +103,35 @@ describe('getListeningPorts', () => {
       },
     ]);
 
-    respondWithError('ps: process not found');
+    respondWith('1 0 bash bash\n');
 
     const ports = await getListeningPorts();
 
     expect(ports).toEqual([]);
   });
 
-  it('detects a listening process on windows via PowerShell', async () => {
+  it('handles a full process-table lookup failing outright', async () => {
+    Object.defineProperty(process, 'platform', { value: 'linux' });
+
+    mockedNetworkConnections.mockResolvedValue([
+      {
+        protocol: 'tcp',
+        localAddress: '127.0.0.1',
+        localPort: '5173',
+        peerAddress: '',
+        peerPort: '',
+        state: 'LISTEN',
+        pid: 9999,
+        process: '',
+      },
+    ]);
+
+    respondWithError('ps: command failed');
+
+    await expect(getListeningPorts()).rejects.toThrow('ps: command failed');
+  });
+
+  it('detects a listening process on windows via a single Get-CimInstance call', async () => {
     Object.defineProperty(process, 'platform', { value: 'win32' });
 
     mockedNetworkConnections.mockResolvedValue([
@@ -127,9 +148,11 @@ describe('getListeningPorts', () => {
     ]);
 
     respondWith(
-      JSON.stringify({ Name: 'node.exe', CommandLine: 'node.exe server.js', ParentProcessId: 500 }),
+      JSON.stringify([
+        { ProcessId: 1234, Name: 'node.exe', CommandLine: 'node.exe server.js', ParentProcessId: 500 },
+        { ProcessId: 500, Name: 'Code.exe', CommandLine: 'Code.exe', ParentProcessId: 1 },
+      ]),
     );
-    respondWith(JSON.stringify({ Name: 'Code.exe', CommandLine: 'Code.exe', ParentProcessId: 1 }));
 
     const ports = await getListeningPorts();
 
@@ -144,8 +167,41 @@ describe('getListeningPorts', () => {
       },
     ]);
 
+    expect(mockedExecFile).toHaveBeenCalledTimes(1);
     const [file] = mockedExecFile.mock.calls[0] as [string, string[]];
     expect(file).toBe('powershell.exe');
+  });
+
+  it('handles Get-CimInstance returning a single bare object instead of an array', async () => {
+    Object.defineProperty(process, 'platform', { value: 'win32' });
+
+    mockedNetworkConnections.mockResolvedValue([
+      {
+        protocol: 'tcp',
+        localAddress: '0.0.0.0',
+        localPort: '8080',
+        peerAddress: '',
+        peerPort: '',
+        state: 'LISTEN',
+        pid: 1234,
+        process: 'node.exe',
+      },
+    ]);
+
+    respondWith(JSON.stringify({ ProcessId: 1234, Name: 'node.exe', CommandLine: 'node.exe', ParentProcessId: 1 }));
+
+    const ports = await getListeningPorts();
+
+    expect(ports).toEqual([
+      {
+        port: 8080,
+        pid: 1234,
+        protocol: 'tcp',
+        processName: 'node.exe',
+        command: 'node.exe',
+        origin: 'unknown',
+      },
+    ]);
   });
 
   it('ignores non-LISTEN states and invalid pids', async () => {
