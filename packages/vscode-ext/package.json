@@ -108,7 +108,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@porthawk/core": "workspace:*"
+    "porthawk-core": "workspace:*"
   },
   "devDependencies": {
     "@types/vscode": "^1.125.0",

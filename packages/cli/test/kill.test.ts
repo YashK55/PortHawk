@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Command } from 'commander';
-import { getListeningPorts, killProcess } from '@porthawk/core';
+import { getListeningPorts, killProcess } from 'porthawk-core';
 import * as clack from '@clack/prompts';
 import { registerKillCommand } from '../src/commands/kill.js';
 
-vi.mock('@porthawk/core', () => ({
+vi.mock('porthawk-core', () => ({
   getListeningPorts: vi.fn(),
   killProcess: vi.fn(),
 }));

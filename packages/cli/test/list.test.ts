@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Command } from 'commander';
-import { getListeningPorts } from '@porthawk/core';
+import { getListeningPorts } from 'porthawk-core';
 import { registerListCommand } from '../src/commands/list.js';
 
-vi.mock('@porthawk/core', () => ({
+vi.mock('porthawk-core', () => ({
   getListeningPorts: vi.fn(),
 }));
 

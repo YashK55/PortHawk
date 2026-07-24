@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { killProcess, type PortInfo } from '@porthawk/core';
+import { killProcess, type PortInfo } from 'porthawk-core';
 import { PortEntryItem } from './treeProvider.js';
 
 async function pickPort(getPorts: () => PortInfo[]): Promise<PortInfo | undefined> {

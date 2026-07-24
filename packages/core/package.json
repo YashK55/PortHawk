@@ -1,5 +1,5 @@
 {
-  "name": "@porthawk/core",
+  "name": "porthawk-core",
   "version": "0.1.1",
   "description": "Detection and process control engine for PortHawk",
   "type": "module",

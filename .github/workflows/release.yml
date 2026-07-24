@@ -33,7 +33,7 @@ jobs:
         run: pnpm run test
 
       - name: Publish core to npm
-        run: pnpm --filter @porthawk/core publish --access public --no-git-checks
+        run: pnpm --filter porthawk-core publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

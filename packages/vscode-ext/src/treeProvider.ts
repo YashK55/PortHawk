@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import type { Origin, PortInfo } from '@porthawk/core';
+import type { Origin, PortInfo } from 'porthawk-core';
 
 const originIconId: Record<Origin, string> = {
   agent: 'circuit-board',

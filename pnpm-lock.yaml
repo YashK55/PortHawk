@@ -216,9 +216,6 @@ importers:
       '@clack/prompts':
         specifier: ^1.7.0
         version: 1.7.0
-      '@porthawk/core':
-        specifier: workspace:*
-        version: link:../core
       cli-table3:
         specifier: ^0.6.5
         version: 0.6.5
@@ -231,6 +228,9 @@ importers:
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
+      porthawk-core:
+        specifier: workspace:*
+        version: link:../core
       react:
         specifier: ^19.2.8
         version: 19.2.8
@@ -275,7 +275,7 @@ importers:
 
   packages/vscode-ext:
     dependencies:
-      '@porthawk/core':
+      porthawk-core:
         specifier: workspace:*
         version: link:../core
     devDependencies:

@@ -1,6 +1,6 @@
 import type { Command } from 'commander';
 import * as clack from '@clack/prompts';
-import { getListeningPorts, killProcess } from '@porthawk/core';
+import { getListeningPorts, killProcess } from 'porthawk-core';
 
 export function registerKillCommand(program: Command): void {
   program

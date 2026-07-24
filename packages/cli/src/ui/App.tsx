@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Box, Text, useApp, useInput } from 'ink';
-import { getListeningPorts, killProcess, type PortInfo } from '@porthawk/core';
+import { getListeningPorts, killProcess, type PortInfo } from 'porthawk-core';
 
 const REFRESH_INTERVAL_MS = 2000;
 

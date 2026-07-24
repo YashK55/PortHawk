@@ -4,4 +4,4 @@
 
 ### Patch Changes
 
-- @porthawk/core@0.1.1
+- porthawk-core@0.1.1

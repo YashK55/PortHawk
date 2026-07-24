@@ -16,11 +16,11 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.7.0",
-    "@porthawk/core": "workspace:*",
     "cli-table3": "^0.6.5",
     "commander": "^15.0.0",
     "ink": "^6.8.0",
     "picocolors": "^1.1.1",
+    "porthawk-core": "workspace:*",
     "react": "^19.2.8"
   },
   "devDependencies": {

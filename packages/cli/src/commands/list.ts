@@ -1,7 +1,7 @@
 import type { Command } from 'commander';
 import Table from 'cli-table3';
 import pc from 'picocolors';
-import { getListeningPorts } from '@porthawk/core';
+import { getListeningPorts } from 'porthawk-core';
 import { colorizeOrigin } from '../format.js';
 
 export function registerListCommand(program: Command): void {

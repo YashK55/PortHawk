@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { getListeningPorts, type PortInfo } from '@porthawk/core';
+import { getListeningPorts, type PortInfo } from 'porthawk-core';
 import { PorthawkTreeProvider } from './treeProvider.js';
 import { PorthawkStatusBar } from './statusBar.js';
 import { registerKillCommand, registerOpenInBrowserCommand } from './commands.js';
