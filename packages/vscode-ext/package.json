@@ -15,6 +15,15 @@
   "categories": [
     "Other"
   ],
+  "keywords": [
+    "port",
+    "server",
+    "localhost",
+    "process manager",
+    "netstat",
+    "kill port",
+    "dev server"
+  ],
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {

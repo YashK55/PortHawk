@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PortHawk — see every port, kill what shouldn't still be running</title>
+  <meta name="description" content="PortHawk is an open-source, telemetry-free tool that lists every server listening on your machine's ports and lets you kill a stale dev server or orphaned process in one step. Available as a VS Code / Open VSX extension and an npx CLI." />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="PortHawk — see every port, kill what shouldn't still be running" />
+  <meta property="og:description" content="An open-source, telemetry-free port monitor for developers. See every listening port, tag which ones trace back to a coding agent, and kill a stale process without leaving your editor or terminal." />
+  <meta property="og:image" content="https://yashk55.github.io/PortHawk/og-image.svg" />
+  <meta property="og:url" content="https://yashk55.github.io/PortHawk/" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="PortHawk — see every port, kill what shouldn't still be running" />
+  <meta name="twitter:description" content="An open-source, telemetry-free port monitor for developers. See every listening port, tag agent-spawned processes, and kill a stale dev server in one step." />
+  <meta name="twitter:image" content="https://yashk55.github.io/PortHawk/og-image.svg" />
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><rect width=%2224%22 height=%2224%22 rx=%225%22 fill=%22%2322d3ee%22/><path d=%22M6 17V8h5l5 5v4%22 stroke=%22%230f172a%22 stroke-width=%222%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>" />
+
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --accent: #0891b2;
+      --border: #e2e8f0;
+      --code-bg: #0f172a;
+      --code-text: #e2e8f0;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1120;
+        --surface: #111827;
+        --text: #f1f5f9;
+        --muted: #94a3b8;
+        --accent: #22d3ee;
+        --border: #1f2937;
+        --code-bg: #0b1120;
+        --code-text: #e2e8f0;
+      }
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+    }
+    .wrap {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem 5rem;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .logo svg { width: 24px; height: 24px; }
+    h1 {
+      font-size: 1.75rem;
+      margin: 0;
+    }
+    .pitch {
+      font-size: 1.25rem;
+      color: var(--muted);
+      margin: 0 0 2.5rem;
+      max-width: 60ch;
+    }
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .badges img { display: block; height: 20px; }
+    section { margin-bottom: 3rem; }
+    h2 {
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    p { color: var(--text); }
+    .install-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    @media (min-width: 640px) {
+      .install-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+    .card h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+    }
+    .card a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .card a:hover { text-decoration: underline; }
+    code, pre {
+      font-family: "SF Mono", Consolas, Monaco, monospace;
+      font-size: 0.9rem;
+    }
+    pre {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 0.9rem 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 0.5rem 0 0;
+    }
+    ul { padding-left: 1.2rem; }
+    li { margin-bottom: 0.4rem; }
+    footer {
+      color: var(--muted);
+      font-size: 0.9rem;
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+    }
+    footer a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M6 17V8h5l5 5v4" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+      <h1>PortHawk</h1>
+    </header>
+
+    <p class="pitch">See every port your machine is listening on, and kill the stray dev server that shouldn't still be running.</p>
+
+    <div class="badges">
+      <a href="https://www.npmjs.com/package/porthawk"><img src="https://img.shields.io/npm/v/porthawk.svg" alt="npm version" /></a>
+      <a href="https://marketplace.visualstudio.com/items?itemName=YashK55.porthawk-vscode"><img src="https://img.shields.io/visual-studio-marketplace/v/YashK55.porthawk-vscode.svg" alt="VS Code Marketplace version" /></a>
+      <a href="https://open-vsx.org/extension/YashK55/porthawk-vscode"><img src="https://img.shields.io/open-vsx/v/YashK55/porthawk-vscode.svg" alt="Open VSX version" /></a>
+      <a href="https://github.com/YashK55/PortHawk/actions/workflows/test.yml"><img src="https://github.com/YashK55/PortHawk/actions/workflows/test.yml/badge.svg" alt="CI status" /></a>
+      <a href="https://github.com/YashK55/PortHawk/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license" /></a>
+    </div>
+
+    <section>
+      <h2>Why</h2>
+      <p>
+        Every open localhost port on your machine is a running process, and it's
+        easy to lose track of which ones still matter. A coding agent starts a
+        dev server to test something, you move on, and the process just keeps
+        listening in the background. PortHawk is a small, open-source process
+        manager for exactly that situation: it reads your machine's open ports
+        the same way <code>netstat</code> would, tells you what's actually
+        behind each one, and lets you kill a stale server without hunting for
+        its PID by hand.
+      </p>
+      <p>
+        Most existing port-monitor tools are closed-source, which means
+        trusting an opaque extension with process and filesystem access.
+        PortHawk doesn't ask for that trust — there's no telemetry, and the
+        entire codebase is small enough to read in one sitting.
+      </p>
+    </section>
+
+    <section>
+      <h2>Install</h2>
+      <div class="install-grid">
+        <div class="card">
+          <h3>VS Code Marketplace</h3>
+          <p>Search <strong>PortHawk</strong> in Extensions, or:</p>
+          <p><a href="https://marketplace.visualstudio.com/items?itemName=YashK55.porthawk-vscode">marketplace.visualstudio.com</a></p>
+        </div>
+        <div class="card">
+          <h3>Open VSX</h3>
+          <p>For Cursor, Windsurf, VSCodium, and other forks:</p>
+          <p><a href="https://open-vsx.org/extension/YashK55/porthawk-vscode">open-vsx.org</a></p>
+        </div>
+        <div class="card">
+          <h3>CLI</h3>
+          <p>No install needed:</p>
+          <pre>npx porthawk list</pre>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>What it does</h2>
+      <p>
+        Run <code>porthawk list</code> or open the sidebar in your editor and
+        you'll see every listening port, the process name behind it, and
+        whether that process looks like it was spawned by a coding agent's
+        terminal, started manually, or is unrecognized. <code>porthawk
+        watch</code> gives you a live, arrow-key-driven view of the same thing
+        in your terminal — press <code>k</code> and confirm to kill a port,
+        no manual PID lookups required.
+      </p>
+      <ul>
+        <li>Cross-platform detection on Windows, macOS, and Linux</li>
+        <li>Tags each server as agent-spawned, manual, or unknown</li>
+        <li>Confirmation required before any kill, in both the CLI and the editor</li>
+        <li>No telemetry, ever, by default</li>
+        <li>Works in any Open VSX–based editor, not just VS Code</li>
+      </ul>
+    </section>
+
+    <footer>
+      <a href="https://github.com/YashK55/PortHawk">Source on GitHub</a> · MIT licensed
+    </footer>
+  </div>
+</body>
+</html>
