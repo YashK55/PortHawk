@@ -1,14 +1,12 @@
 {
-  "name": "portwatch",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "portwatch-workspace",
+  "private": true,
+  "description": "Monorepo root for the PortWatch CLI, VS Code extension, and shared core engine",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "pnpm -r run build",
+    "test": "pnpm --filter=./packages/core --filter=./packages/cli run test",
+    "typecheck": "pnpm -r run typecheck"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
