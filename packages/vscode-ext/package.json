@@ -25,6 +25,9 @@
     "kill port",
     "dev server"
   ],
+  "activationEvents": [
+    "onView:porthawkPorts"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "viewsContainers": {
