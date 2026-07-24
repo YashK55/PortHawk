@@ -2,7 +2,14 @@ import * as vscode from 'vscode';
 import { getListeningPorts, type PortInfo } from 'porthawk-core';
 import { PorthawkTreeProvider } from './treeProvider.js';
 import { PorthawkStatusBar } from './statusBar.js';
-import { registerKillCommand, registerOpenInBrowserCommand } from './commands.js';
+import {
+  registerCopyCommands,
+  registerIgnoreCommands,
+  registerKillCommand,
+  registerKillProcessGroupCommand,
+  registerOpenInBrowserCommand,
+  registerToggleHideSystemProcessesCommand,
+} from './commands.js';
 
 function portKey(port: PortInfo): string {
   return `${port.pid}:${port.port}:${port.protocol}`;
@@ -19,6 +26,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const treeProvider = new PorthawkTreeProvider(
     () => config().get('autoTagAgentProcesses', true),
     () => config().get('hideSystemProcesses', true),
+    () => config().get('ignoredProcessNames', []),
   );
   const statusBar = new PorthawkStatusBar();
   const treeView = vscode.window.createTreeView('porthawkPorts', { treeDataProvider: treeProvider });
@@ -40,10 +48,26 @@ export function activate(context: vscode.ExtensionContext): void {
     hasBaseline = true;
   }
 
+  function updateTreeMessage(): void {
+    const total = treeProvider.getTotalCount();
+    const visible = treeProvider.getVisibleCount();
+
+    if (total === 0) {
+      treeView.message = 'No listening ports found.';
+    } else if (visible === 0) {
+      treeView.message = 'All ports are hidden by hideSystemProcesses or ignored processes — adjust in Settings.';
+    } else {
+      treeView.message = undefined;
+    }
+  }
+
   async function refresh(): Promise<void> {
+    treeView.message = 'Refreshing…';
+
     try {
       ports = await getListeningPorts();
     } catch (error) {
+      treeView.message = undefined;
       void vscode.window.showErrorMessage(`PortHawk: ${error instanceof Error ? error.message : String(error)}`);
       return;
     }
@@ -51,6 +75,7 @@ export function activate(context: vscode.ExtensionContext): void {
     treeProvider.setPorts(ports);
     statusBar.setCount(ports.length);
     notifyNewOrphans(ports);
+    updateTreeMessage();
   }
 
   function startPolling(): void {
@@ -84,11 +109,15 @@ export function activate(context: vscode.ExtensionContext): void {
         stopPolling();
         startPolling();
       }
+      if (event.affectsConfiguration('porthawk.autoTagAgentProcesses')) {
+        treeProvider.refreshDecorations();
+      }
       if (
-        event.affectsConfiguration('porthawk.autoTagAgentProcesses') ||
-        event.affectsConfiguration('porthawk.hideSystemProcesses')
+        event.affectsConfiguration('porthawk.hideSystemProcesses') ||
+        event.affectsConfiguration('porthawk.ignoredProcessNames')
       ) {
         treeProvider.refreshDecorations();
+        updateTreeMessage();
       }
     }),
     vscode.commands.registerCommand('porthawk.refresh', () => void refresh()),
@@ -97,6 +126,10 @@ export function activate(context: vscode.ExtensionContext): void {
 
   registerKillCommand(context, () => ports, refresh);
   registerOpenInBrowserCommand(context, () => ports);
+  registerCopyCommands(context, () => ports);
+  registerKillProcessGroupCommand(context, refresh);
+  registerIgnoreCommands(context);
+  registerToggleHideSystemProcessesCommand(context);
 
   void refresh();
 }

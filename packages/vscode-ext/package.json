@@ -65,6 +65,38 @@
         "title": "Open in Browser",
         "category": "PortHawk",
         "icon": "$(globe)"
+      },
+      {
+        "command": "porthawk.copyPort",
+        "title": "Copy Port",
+        "category": "PortHawk"
+      },
+      {
+        "command": "porthawk.copyPid",
+        "title": "Copy PID",
+        "category": "PortHawk"
+      },
+      {
+        "command": "porthawk.killProcessGroup",
+        "title": "Kill All in Group",
+        "category": "PortHawk",
+        "icon": "$(close-all)"
+      },
+      {
+        "command": "porthawk.ignoreProcess",
+        "title": "Ignore Process",
+        "category": "PortHawk",
+        "icon": "$(eye-closed)"
+      },
+      {
+        "command": "porthawk.clearIgnoredProcesses",
+        "title": "Clear Ignored Processes",
+        "category": "PortHawk"
+      },
+      {
+        "command": "porthawk.toggleHideSystemProcesses",
+        "title": "Toggle Hide System Processes",
+        "category": "PortHawk"
       }
     ],
     "menus": {
@@ -85,6 +117,31 @@
           "command": "porthawk.killProcess",
           "when": "view == porthawkPorts && viewItem == portEntry",
           "group": "inline"
+        },
+        {
+          "command": "porthawk.killProcessGroup",
+          "when": "view == porthawkPorts && viewItem == portGroup",
+          "group": "inline"
+        },
+        {
+          "command": "porthawk.copyPort",
+          "when": "view == porthawkPorts && viewItem == portEntry",
+          "group": "1_copy"
+        },
+        {
+          "command": "porthawk.copyPid",
+          "when": "view == porthawkPorts && viewItem == portEntry",
+          "group": "1_copy"
+        },
+        {
+          "command": "porthawk.ignoreProcess",
+          "when": "view == porthawkPorts && viewItem == portEntry",
+          "group": "2_manage"
+        },
+        {
+          "command": "porthawk.ignoreProcess",
+          "when": "view == porthawkPorts && viewItem == portGroup",
+          "group": "2_manage"
         }
       ]
     },
@@ -111,6 +168,14 @@
           "type": "boolean",
           "default": true,
           "description": "Hide well-known OS/service processes (svchost, System, systemd, launchd, and similar) from the list, showing only ports likely opened by dev servers and other user processes. Detection itself is unaffected — this only changes what's displayed here; `porthawk list` on the CLI always shows everything."
+        },
+        "porthawk.ignoredProcessNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Process names to always hide from the list, in addition to porthawk.hideSystemProcesses. Managed automatically via the \"Ignore Process\" command, but can be edited here directly."
         }
       }
     }

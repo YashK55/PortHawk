@@ -8,9 +8,16 @@ export function registerListCommand(program: Command): void {
   program
     .command('list')
     .description('list all listening ports')
-    .action(async () => {
+    .option('--json', 'output as JSON instead of a table')
+    .action(async (options: { json?: boolean }) => {
       try {
         const ports = await getListeningPorts();
+        ports.sort((a, b) => a.port - b.port);
+
+        if (options.json) {
+          console.log(JSON.stringify(ports, null, 2));
+          return;
+        }
 
         if (ports.length === 0) {
           console.log('no listening ports found');
@@ -19,7 +26,7 @@ export function registerListCommand(program: Command): void {
 
         const table = new Table({ head: [pc.bold('PORT'), pc.bold('PROCESS'), pc.bold('PID'), pc.bold('ORIGIN')] });
 
-        for (const port of ports.sort((a, b) => a.port - b.port)) {
+        for (const port of ports) {
           table.push([String(port.port), port.processName || '?', String(port.pid), colorizeOrigin(port.origin)]);
         }
 

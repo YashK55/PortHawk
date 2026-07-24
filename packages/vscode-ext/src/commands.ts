@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { killProcess, type PortInfo } from 'porthawk-core';
-import { PortEntryItem } from './treeProvider.js';
+import { PortEntryItem, ProcessGroupItem } from './treeProvider.js';
 
 async function pickPort(getPorts: () => PortInfo[]): Promise<PortInfo | undefined> {
   const ports = getPorts();
@@ -30,6 +30,16 @@ function resolvePort(item: unknown, getPorts: () => PortInfo[]): Promise<PortInf
     return Promise.resolve(item.port);
   }
   return pickPort(getPorts);
+}
+
+function resolveProcessName(item: unknown): string | undefined {
+  if (item instanceof PortEntryItem) {
+    return item.port.processName;
+  }
+  if (item instanceof ProcessGroupItem) {
+    return item.processName;
+  }
+  return undefined;
 }
 
 function errorMessage(error: unknown): string {
@@ -75,6 +85,106 @@ export function registerOpenInBrowserCommand(context: vscode.ExtensionContext, g
         return;
       }
       await vscode.env.openExternal(vscode.Uri.parse(`http://localhost:${target.port}`));
+    }),
+  );
+}
+
+export function registerCopyCommands(context: vscode.ExtensionContext, getPorts: () => PortInfo[]): void {
+  context.subscriptions.push(
+    vscode.commands.registerCommand('porthawk.copyPort', async (item?: unknown) => {
+      const target = await resolvePort(item, getPorts);
+      if (!target) {
+        return;
+      }
+      await vscode.env.clipboard.writeText(String(target.port));
+    }),
+    vscode.commands.registerCommand('porthawk.copyPid', async (item?: unknown) => {
+      const target = await resolvePort(item, getPorts);
+      if (!target) {
+        return;
+      }
+      await vscode.env.clipboard.writeText(String(target.pid));
+    }),
+  );
+}
+
+export function registerKillProcessGroupCommand(context: vscode.ExtensionContext, refresh: () => Promise<void>): void {
+  context.subscriptions.push(
+    vscode.commands.registerCommand('porthawk.killProcessGroup', async (item?: unknown) => {
+      if (!(item instanceof ProcessGroupItem)) {
+        return;
+      }
+
+      const uniquePids = [...new Set(item.ports.map((port) => port.pid))];
+      const confirmed = await vscode.window.showWarningMessage(
+        `Kill all ${uniquePids.length} ${item.processName} process${uniquePids.length === 1 ? '' : 'es'} (${item.ports.length} port${item.ports.length === 1 ? '' : 's'})?`,
+        { modal: true },
+        'Kill All',
+      );
+      if (confirmed !== 'Kill All') {
+        return;
+      }
+
+      const errors: string[] = [];
+      for (const pid of uniquePids) {
+        try {
+          await killProcess(pid);
+        } catch (error) {
+          errors.push(errorMessage(error));
+        }
+      }
+
+      if (errors.length > 0) {
+        void vscode.window.showErrorMessage(`PortHawk: ${errors.join('; ')}`);
+      }
+      await refresh();
+    }),
+  );
+}
+
+function getIgnoredProcessNames(): string[] {
+  return vscode.workspace.getConfiguration('porthawk').get<string[]>('ignoredProcessNames', []);
+}
+
+async function setIgnoredProcessNames(names: string[]): Promise<void> {
+  await vscode.workspace
+    .getConfiguration('porthawk')
+    .update('ignoredProcessNames', names, vscode.ConfigurationTarget.Global);
+}
+
+export function registerIgnoreCommands(context: vscode.ExtensionContext): void {
+  context.subscriptions.push(
+    vscode.commands.registerCommand('porthawk.ignoreProcess', async (item?: unknown) => {
+      const name = resolveProcessName(item);
+      if (!name) {
+        void vscode.window.showInformationMessage('PortHawk: select a process to ignore first.');
+        return;
+      }
+
+      const current = getIgnoredProcessNames();
+      if (!current.includes(name)) {
+        await setIgnoredProcessNames([...current, name]);
+      }
+      void vscode.window.showInformationMessage(
+        `PortHawk: "${name}" will be hidden from the list. Undo with "PortHawk: Clear Ignored Processes".`,
+      );
+    }),
+    vscode.commands.registerCommand('porthawk.clearIgnoredProcesses', async () => {
+      await setIgnoredProcessNames([]);
+      void vscode.window.showInformationMessage('PortHawk: cleared ignored processes.');
+    }),
+  );
+}
+
+export function registerToggleHideSystemProcessesCommand(context: vscode.ExtensionContext): void {
+  context.subscriptions.push(
+    vscode.commands.registerCommand('porthawk.toggleHideSystemProcesses', async () => {
+      const config = vscode.workspace.getConfiguration('porthawk');
+      const current = config.get<boolean>('hideSystemProcesses', true);
+      await config.update('hideSystemProcesses', !current, vscode.ConfigurationTarget.Global);
+      void vscode.window.showInformationMessage(
+        `PortHawk: system processes are now ${current ? 'shown' : 'hidden'}.`,
+      );
     }),
   );
 }

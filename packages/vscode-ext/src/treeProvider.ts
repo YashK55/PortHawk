@@ -29,6 +29,11 @@ export class PortEntryItem extends vscode.TreeItem {
     this.tooltip = port.command || port.processName;
     this.iconPath = new vscode.ThemeIcon(tagOrigin ? originIconId[port.origin] : 'circle-outline');
     this.contextValue = 'portEntry';
+    this.command = {
+      command: 'porthawk.openInBrowser',
+      title: 'Open in Browser',
+      arguments: [this],
+    };
   }
 }
 
@@ -43,6 +48,7 @@ export class PorthawkTreeProvider implements vscode.TreeDataProvider<PorthawkTre
   constructor(
     private readonly shouldTagOrigin: () => boolean,
     private readonly shouldHideSystemProcesses: () => boolean,
+    private readonly getIgnoredProcessNames: () => string[],
   ) {}
 
   setPorts(ports: PortInfo[]): void {
@@ -60,10 +66,7 @@ export class PorthawkTreeProvider implements vscode.TreeDataProvider<PorthawkTre
 
   getChildren(element?: PorthawkTreeItem): PorthawkTreeItem[] {
     if (!element) {
-      const visiblePorts = this.shouldHideSystemProcesses()
-        ? this.ports.filter((port) => !isSystemProcess(port.processName))
-        : this.ports;
-      return groupByProcessName(visiblePorts).map(([name, ports]) => new ProcessGroupItem(name, ports));
+      return groupByProcessName(this.getVisiblePorts()).map(([name, ports]) => new ProcessGroupItem(name, ports));
     }
 
     if (element instanceof ProcessGroupItem) {
@@ -74,6 +77,29 @@ export class PorthawkTreeProvider implements vscode.TreeDataProvider<PorthawkTre
     }
 
     return [];
+  }
+
+  getTotalCount(): number {
+    return this.ports.length;
+  }
+
+  getVisibleCount(): number {
+    return this.getVisiblePorts().length;
+  }
+
+  private getVisiblePorts(): PortInfo[] {
+    const ignored = new Set(this.getIgnoredProcessNames());
+    const hideSystem = this.shouldHideSystemProcesses();
+
+    return this.ports.filter((port) => {
+      if (hideSystem && isSystemProcess(port.processName)) {
+        return false;
+      }
+      if (ignored.has(port.processName)) {
+        return false;
+      }
+      return true;
+    });
   }
 }
 
