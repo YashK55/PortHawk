@@ -1,6 +1,6 @@
 {
-  "name": "portwatch-vscode",
-  "displayName": "PortWatch",
+  "name": "porthawk-vscode",
+  "displayName": "PortHawk",
   "description": "See every listening port on your machine and kill what shouldn't still be running",
   "version": "0.1.0",
   "type": "module",
@@ -16,76 +16,76 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "portwatch",
-          "title": "PortWatch",
+          "id": "porthawk",
+          "title": "PortHawk",
           "icon": "media/activity-bar-icon.svg"
         }
       ]
     },
     "views": {
-      "portwatch": [
+      "porthawk": [
         {
-          "id": "portwatchPorts",
+          "id": "porthawkPorts",
           "name": "Listening Ports"
         }
       ]
     },
     "commands": [
       {
-        "command": "portwatch.refresh",
+        "command": "porthawk.refresh",
         "title": "Refresh",
-        "category": "PortWatch",
+        "category": "PortHawk",
         "icon": "$(refresh)"
       },
       {
-        "command": "portwatch.killProcess",
+        "command": "porthawk.killProcess",
         "title": "Kill Process",
-        "category": "PortWatch",
+        "category": "PortHawk",
         "icon": "$(debug-stop)"
       },
       {
-        "command": "portwatch.openInBrowser",
+        "command": "porthawk.openInBrowser",
         "title": "Open in Browser",
-        "category": "PortWatch",
+        "category": "PortHawk",
         "icon": "$(globe)"
       }
     ],
     "menus": {
       "view/title": [
         {
-          "command": "portwatch.refresh",
-          "when": "view == portwatchPorts",
+          "command": "porthawk.refresh",
+          "when": "view == porthawkPorts",
           "group": "navigation"
         }
       ],
       "view/item/context": [
         {
-          "command": "portwatch.openInBrowser",
-          "when": "view == portwatchPorts && viewItem == portEntry",
+          "command": "porthawk.openInBrowser",
+          "when": "view == porthawkPorts && viewItem == portEntry",
           "group": "inline"
         },
         {
-          "command": "portwatch.killProcess",
-          "when": "view == portwatchPorts && viewItem == portEntry",
+          "command": "porthawk.killProcess",
+          "when": "view == porthawkPorts && viewItem == portEntry",
           "group": "inline"
         }
       ]
     },
     "configuration": {
-      "title": "PortWatch",
+      "title": "PortHawk",
       "properties": {
-        "portwatch.refreshInterval": {
+        "porthawk.refreshInterval": {
           "type": "number",
           "default": 3000,
           "minimum": 500,
-          "description": "How often to re-scan listening ports, in milliseconds, while the PortWatch view is visible."
+          "description": "How often to re-scan listening ports, in milliseconds, while the PortHawk view is visible."
         },
-        "portwatch.autoTagAgentProcesses": {
+        "porthawk.autoTagAgentProcesses": {
           "type": "boolean",
           "default": true,
           "description": "Tag ports likely opened by an AI coding agent's terminal with a distinct icon."
         },
-        "portwatch.notifyOnNewOrphanedServer": {
+        "porthawk.notifyOnNewOrphanedServer": {
           "type": "boolean",
           "default": false,
           "description": "Show a notification when a new likely agent-spawned server is detected."
@@ -107,7 +107,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@portwatch/core": "workspace:*"
+    "@porthawk/core": "workspace:*"
   },
   "devDependencies": {
     "@types/vscode": "^1.125.0",

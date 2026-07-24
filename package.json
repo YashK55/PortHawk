@@ -1,7 +1,7 @@
 {
-  "name": "portwatch-workspace",
+  "name": "porthawk-workspace",
   "private": true,
-  "description": "Monorepo root for the PortWatch CLI, VS Code extension, and shared core engine",
+  "description": "Monorepo root for the PortHawk CLI, VS Code extension, and shared core engine",
   "scripts": {
     "build": "pnpm -r run build",
     "test": "pnpm --filter=./packages/core --filter=./packages/cli run test",

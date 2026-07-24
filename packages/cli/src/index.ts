@@ -11,7 +11,7 @@ const pkg = require('../package.json') as { version: string };
 const program = new Command();
 
 program
-  .name('portwatch')
+  .name('porthawk')
   .description("see what's listening on your machine's ports and kill what shouldn't be")
   .version(pkg.version);
 
@@ -20,6 +20,6 @@ registerKillCommand(program);
 registerWatchCommand(program);
 
 program.parseAsync(process.argv).catch((error: unknown) => {
-  console.error(`portwatch: ${error instanceof Error ? error.message : String(error)}`);
+  console.error(`porthawk: ${error instanceof Error ? error.message : String(error)}`);
   process.exitCode = 1;
 });

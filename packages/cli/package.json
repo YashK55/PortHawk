@@ -1,10 +1,10 @@
 {
-  "name": "portwatch",
+  "name": "porthawk",
   "version": "0.1.0",
   "description": "See every port your machine is listening on and kill what shouldn't still be running",
   "type": "module",
   "bin": {
-    "portwatch": "./dist/index.js"
+    "porthawk": "./dist/index.js"
   },
   "files": [
     "dist"
@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.7.0",
-    "@portwatch/core": "workspace:*",
+    "@porthawk/core": "workspace:*",
     "cli-table3": "^0.6.5",
     "commander": "^15.0.0",
     "ink": "^6.8.0",

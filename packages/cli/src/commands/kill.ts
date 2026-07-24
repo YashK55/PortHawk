@@ -1,6 +1,6 @@
 import type { Command } from 'commander';
 import * as clack from '@clack/prompts';
-import { getListeningPorts, killProcess } from '@portwatch/core';
+import { getListeningPorts, killProcess } from '@porthawk/core';
 
 export function registerKillCommand(program: Command): void {
   program
@@ -9,7 +9,7 @@ export function registerKillCommand(program: Command): void {
     .action(async (portArg: string) => {
       const port = Number(portArg);
       if (!Number.isInteger(port) || port <= 0) {
-        console.error(`portwatch: invalid port "${portArg}"`);
+        console.error(`porthawk: invalid port "${portArg}"`);
         process.exitCode = 1;
         return;
       }
@@ -19,7 +19,7 @@ export function registerKillCommand(program: Command): void {
         const match = ports.find((entry) => entry.port === port);
 
         if (!match) {
-          console.error(`portwatch: nothing is listening on port ${port}`);
+          console.error(`porthawk: nothing is listening on port ${port}`);
           process.exitCode = 1;
           return;
         }
@@ -37,7 +37,7 @@ export function registerKillCommand(program: Command): void {
         await killProcess(match.pid);
         console.log(`killed ${match.processName || 'unknown process'} (pid ${match.pid})`);
       } catch (error) {
-        console.error(`portwatch: ${error instanceof Error ? error.message : String(error)}`);
+        console.error(`porthawk: ${error instanceof Error ? error.message : String(error)}`);
         process.exitCode = 1;
       }
     });

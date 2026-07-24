@@ -1,7 +1,7 @@
 {
-  "name": "@portwatch/core",
+  "name": "@porthawk/core",
   "version": "0.1.0",
-  "description": "Detection and process control engine for PortWatch",
+  "description": "Detection and process control engine for PortHawk",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

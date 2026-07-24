@@ -212,7 +212,7 @@ importers:
       '@clack/prompts':
         specifier: ^1.7.0
         version: 1.7.0
-      '@portwatch/core':
+      '@porthawk/core':
         specifier: workspace:*
         version: link:../core
       cli-table3:
@@ -271,7 +271,7 @@ importers:
 
   packages/vscode-ext:
     dependencies:
-      '@portwatch/core':
+      '@porthawk/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:

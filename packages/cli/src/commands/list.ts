@@ -1,7 +1,7 @@
 import type { Command } from 'commander';
 import Table from 'cli-table3';
 import pc from 'picocolors';
-import { getListeningPorts } from '@portwatch/core';
+import { getListeningPorts } from '@porthawk/core';
 import { colorizeOrigin } from '../format.js';
 
 export function registerListCommand(program: Command): void {
@@ -25,7 +25,7 @@ export function registerListCommand(program: Command): void {
 
         console.log(table.toString());
       } catch (error) {
-        console.error(`portwatch: ${error instanceof Error ? error.message : String(error)}`);
+        console.error(`porthawk: ${error instanceof Error ? error.message : String(error)}`);
         process.exitCode = 1;
       }
     });

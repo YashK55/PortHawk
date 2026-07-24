@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Command } from 'commander';
-import { getListeningPorts, killProcess } from '@portwatch/core';
+import { getListeningPorts, killProcess } from '@porthawk/core';
 import * as clack from '@clack/prompts';
 import { registerKillCommand } from '../src/commands/kill.js';
 
-vi.mock('@portwatch/core', () => ({
+vi.mock('@porthawk/core', () => ({
   getListeningPorts: vi.fn(),
   killProcess: vi.fn(),
 }));
@@ -30,7 +30,7 @@ const samplePort = {
   origin: 'agent' as const,
 };
 
-describe('portwatch kill', () => {
+describe('porthawk kill', () => {
   let logSpy: ReturnType<typeof vi.spyOn>;
   let errorSpy: ReturnType<typeof vi.spyOn>;
 
@@ -59,9 +59,9 @@ describe('portwatch kill', () => {
   }
 
   it('rejects a non-numeric port without calling core', async () => {
-    await makeProgram().parseAsync(['node', 'portwatch', 'kill', 'abc']);
+    await makeProgram().parseAsync(['node', 'porthawk', 'kill', 'abc']);
 
-    expect(errorSpy).toHaveBeenCalledWith('portwatch: invalid port "abc"');
+    expect(errorSpy).toHaveBeenCalledWith('porthawk: invalid port "abc"');
     expect(process.exitCode).toBe(1);
     expect(mockedGetListeningPorts).not.toHaveBeenCalled();
   });
@@ -69,9 +69,9 @@ describe('portwatch kill', () => {
   it('exits non-zero when nothing listens on the given port', async () => {
     mockedGetListeningPorts.mockResolvedValue([]);
 
-    await makeProgram().parseAsync(['node', 'portwatch', 'kill', '3000']);
+    await makeProgram().parseAsync(['node', 'porthawk', 'kill', '3000']);
 
-    expect(errorSpy).toHaveBeenCalledWith('portwatch: nothing is listening on port 3000');
+    expect(errorSpy).toHaveBeenCalledWith('porthawk: nothing is listening on port 3000');
     expect(process.exitCode).toBe(1);
   });
 
@@ -79,7 +79,7 @@ describe('portwatch kill', () => {
     mockedGetListeningPorts.mockResolvedValue([samplePort]);
     mockedConfirm.mockResolvedValue(false);
 
-    await makeProgram().parseAsync(['node', 'portwatch', 'kill', '3000']);
+    await makeProgram().parseAsync(['node', 'porthawk', 'kill', '3000']);
 
     expect(mockedKillProcess).not.toHaveBeenCalled();
     expect(mockedCancel).toHaveBeenCalledWith('not killed');
@@ -90,7 +90,7 @@ describe('portwatch kill', () => {
     mockedConfirm.mockResolvedValue(Symbol('cancel'));
     mockedIsCancel.mockReturnValue(true);
 
-    await makeProgram().parseAsync(['node', 'portwatch', 'kill', '3000']);
+    await makeProgram().parseAsync(['node', 'porthawk', 'kill', '3000']);
 
     expect(mockedKillProcess).not.toHaveBeenCalled();
   });
@@ -100,7 +100,7 @@ describe('portwatch kill', () => {
     mockedConfirm.mockResolvedValue(true);
     mockedKillProcess.mockResolvedValue(undefined);
 
-    await makeProgram().parseAsync(['node', 'portwatch', 'kill', '3000']);
+    await makeProgram().parseAsync(['node', 'porthawk', 'kill', '3000']);
 
     expect(mockedKillProcess).toHaveBeenCalledWith(4242);
     expect(logSpy).toHaveBeenCalledWith('killed node (pid 4242)');
@@ -111,9 +111,9 @@ describe('portwatch kill', () => {
     mockedConfirm.mockResolvedValue(true);
     mockedKillProcess.mockRejectedValue(new Error('operation not permitted'));
 
-    await makeProgram().parseAsync(['node', 'portwatch', 'kill', '3000']);
+    await makeProgram().parseAsync(['node', 'porthawk', 'kill', '3000']);
 
-    expect(errorSpy).toHaveBeenCalledWith('portwatch: operation not permitted');
+    expect(errorSpy).toHaveBeenCalledWith('porthawk: operation not permitted');
     expect(process.exitCode).toBe(1);
   });
 });

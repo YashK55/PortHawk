@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import { getListeningPorts, type PortInfo } from '@portwatch/core';
-import { PortwatchTreeProvider } from './treeProvider.js';
-import { PortwatchStatusBar } from './statusBar.js';
+import { getListeningPorts, type PortInfo } from '@porthawk/core';
+import { PorthawkTreeProvider } from './treeProvider.js';
+import { PorthawkStatusBar } from './statusBar.js';
 import { registerKillCommand, registerOpenInBrowserCommand } from './commands.js';
 
 function portKey(port: PortInfo): string {
@@ -9,16 +9,16 @@ function portKey(port: PortInfo): string {
 }
 
 export function activate(context: vscode.ExtensionContext): void {
-  const config = () => vscode.workspace.getConfiguration('portwatch');
+  const config = () => vscode.workspace.getConfiguration('porthawk');
 
   let ports: PortInfo[] = [];
   let knownKeys = new Set<string>();
   let hasBaseline = false;
   let pollTimer: ReturnType<typeof setInterval> | undefined;
 
-  const treeProvider = new PortwatchTreeProvider(() => config().get('autoTagAgentProcesses', true));
-  const statusBar = new PortwatchStatusBar();
-  const treeView = vscode.window.createTreeView('portwatchPorts', { treeDataProvider: treeProvider });
+  const treeProvider = new PorthawkTreeProvider(() => config().get('autoTagAgentProcesses', true));
+  const statusBar = new PorthawkStatusBar();
+  const treeView = vscode.window.createTreeView('porthawkPorts', { treeDataProvider: treeProvider });
 
   function notifyNewOrphans(current: PortInfo[]): void {
     const currentKeys = new Set(current.map(portKey));
@@ -27,7 +27,7 @@ export function activate(context: vscode.ExtensionContext): void {
       for (const port of current) {
         if (port.origin === 'agent' && !knownKeys.has(portKey(port))) {
           void vscode.window.showInformationMessage(
-            `PortWatch: new agent-spawned server on port ${port.port} (${port.processName || 'unknown'}, pid ${port.pid})`,
+            `PortHawk: new agent-spawned server on port ${port.port} (${port.processName || 'unknown'}, pid ${port.pid})`,
           );
         }
       }
@@ -41,7 +41,7 @@ export function activate(context: vscode.ExtensionContext): void {
     try {
       ports = await getListeningPorts();
     } catch (error) {
-      void vscode.window.showErrorMessage(`PortWatch: ${error instanceof Error ? error.message : String(error)}`);
+      void vscode.window.showErrorMessage(`PortHawk: ${error instanceof Error ? error.message : String(error)}`);
       return;
     }
 
@@ -77,15 +77,15 @@ export function activate(context: vscode.ExtensionContext): void {
       }
     }),
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration('portwatch.refreshInterval') && pollTimer) {
+      if (event.affectsConfiguration('porthawk.refreshInterval') && pollTimer) {
         stopPolling();
         startPolling();
       }
-      if (event.affectsConfiguration('portwatch.autoTagAgentProcesses')) {
+      if (event.affectsConfiguration('porthawk.autoTagAgentProcesses')) {
         treeProvider.refreshDecorations();
       }
     }),
-    vscode.commands.registerCommand('portwatch.refresh', () => void refresh()),
+    vscode.commands.registerCommand('porthawk.refresh', () => void refresh()),
     { dispose: () => statusBar.dispose() },
   );
 

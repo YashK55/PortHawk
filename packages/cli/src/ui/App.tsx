@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Box, Text, useApp, useInput } from 'ink';
-import { getListeningPorts, killProcess, type PortInfo } from '@portwatch/core';
+import { getListeningPorts, killProcess, type PortInfo } from '@porthawk/core';
 
 const REFRESH_INTERVAL_MS = 2000;
 
@@ -86,7 +86,7 @@ export function App(): React.ReactElement {
 
   return (
     <Box flexDirection="column">
-      <Text dimColor>portwatch watch — ↑/↓ select, k kill, q quit</Text>
+      <Text dimColor>porthawk watch â€” â†‘/â†“ select, k kill, q quit</Text>
       <Box flexDirection="column" marginTop={1}>
         {ports.length === 0 && <Text dimColor>no listening ports found</Text>}
         {ports.map((port, index) => {
@@ -110,7 +110,7 @@ export function App(): React.ReactElement {
       )}
       {status === 'killing' && (
         <Box marginTop={1}>
-          <Text dimColor>killing…</Text>
+          <Text dimColor>killingâ€¦</Text>
         </Box>
       )}
       {message && status === 'idle' && (

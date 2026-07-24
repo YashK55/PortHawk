@@ -1,10 +1,10 @@
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, cleanup } from 'ink-testing-library';
-import { getListeningPorts, killProcess } from '@portwatch/core';
+import { getListeningPorts, killProcess } from '@porthawk/core';
 import { App } from '../src/ui/App.js';
 
-vi.mock('@portwatch/core', () => ({
+vi.mock('@porthawk/core', () => ({
   getListeningPorts: vi.fn(),
   killProcess: vi.fn(),
 }));

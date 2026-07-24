@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
-import { killProcess, type PortInfo } from '@portwatch/core';
+import { killProcess, type PortInfo } from '@porthawk/core';
 import { PortEntryItem } from './treeProvider.js';
 
 async function pickPort(getPorts: () => PortInfo[]): Promise<PortInfo | undefined> {
   const ports = getPorts();
 
   if (ports.length === 0) {
-    void vscode.window.showInformationMessage('PortWatch: no listening ports detected.');
+    void vscode.window.showInformationMessage('PortHawk: no listening ports detected.');
     return undefined;
   }
 
@@ -15,8 +15,8 @@ async function pickPort(getPorts: () => PortInfo[]): Promise<PortInfo | undefine
       .slice()
       .sort((a, b) => a.port - b.port)
       .map((port) => ({
-        label: `:${port.port} — ${port.processName || 'unknown'}`,
-        description: `pid ${port.pid} · ${port.origin}`,
+        label: `:${port.port} â€” ${port.processName || 'unknown'}`,
+        description: `pid ${port.pid} Â· ${port.origin}`,
         port,
       })),
     { placeHolder: 'Select a listening port' },
@@ -42,7 +42,7 @@ export function registerKillCommand(
   refresh: () => Promise<void>,
 ): void {
   context.subscriptions.push(
-    vscode.commands.registerCommand('portwatch.killProcess', async (item?: unknown) => {
+    vscode.commands.registerCommand('porthawk.killProcess', async (item?: unknown) => {
       const target = await resolvePort(item, getPorts);
       if (!target) {
         return;
@@ -61,7 +61,7 @@ export function registerKillCommand(
         await killProcess(target.pid);
         await refresh();
       } catch (error) {
-        void vscode.window.showErrorMessage(`PortWatch: ${errorMessage(error)}`);
+        void vscode.window.showErrorMessage(`PortHawk: ${errorMessage(error)}`);
       }
     }),
   );
@@ -69,7 +69,7 @@ export function registerKillCommand(
 
 export function registerOpenInBrowserCommand(context: vscode.ExtensionContext, getPorts: () => PortInfo[]): void {
   context.subscriptions.push(
-    vscode.commands.registerCommand('portwatch.openInBrowser', async (item?: unknown) => {
+    vscode.commands.registerCommand('porthawk.openInBrowser', async (item?: unknown) => {
       const target = await resolvePort(item, getPorts);
       if (!target) {
         return;

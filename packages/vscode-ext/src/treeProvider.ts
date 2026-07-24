@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import type { Origin, PortInfo } from '@portwatch/core';
+import type { Origin, PortInfo } from '@porthawk/core';
 
 const originIconId: Record<Origin, string> = {
   agent: 'circuit-board',
@@ -25,16 +25,16 @@ export class PortEntryItem extends vscode.TreeItem {
     tagOrigin: boolean,
   ) {
     super(`:${port.port}`, vscode.TreeItemCollapsibleState.None);
-    this.description = `${port.protocol} · pid ${port.pid}`;
+    this.description = `${port.protocol} Â· pid ${port.pid}`;
     this.tooltip = port.command || port.processName;
     this.iconPath = new vscode.ThemeIcon(tagOrigin ? originIconId[port.origin] : 'circle-outline');
     this.contextValue = 'portEntry';
   }
 }
 
-export type PortwatchTreeItem = ProcessGroupItem | PortEntryItem;
+export type PorthawkTreeItem = ProcessGroupItem | PortEntryItem;
 
-export class PortwatchTreeProvider implements vscode.TreeDataProvider<PortwatchTreeItem> {
+export class PorthawkTreeProvider implements vscode.TreeDataProvider<PorthawkTreeItem> {
   private readonly changeEmitter = new vscode.EventEmitter<void>();
   readonly onDidChangeTreeData = this.changeEmitter.event;
 
@@ -51,11 +51,11 @@ export class PortwatchTreeProvider implements vscode.TreeDataProvider<PortwatchT
     this.changeEmitter.fire();
   }
 
-  getTreeItem(element: PortwatchTreeItem): vscode.TreeItem {
+  getTreeItem(element: PorthawkTreeItem): vscode.TreeItem {
     return element;
   }
 
-  getChildren(element?: PortwatchTreeItem): PortwatchTreeItem[] {
+  getChildren(element?: PorthawkTreeItem): PorthawkTreeItem[] {
     if (!element) {
       return groupByProcessName(this.ports).map(([name, ports]) => new ProcessGroupItem(name, ports));
     }
