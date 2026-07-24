@@ -50,6 +50,11 @@ jobs:
         working-directory: packages/vscode-ext
         run: pnpm dlx @vscode/vsce publish --packagePath porthawk.vsix -p ${{ secrets.VSCE_PAT }}
 
+      - name: Ensure Open VSX namespace exists
+        working-directory: packages/vscode-ext
+        continue-on-error: true
+        run: pnpm dlx ovsx create-namespace YashK55 -p ${{ secrets.OVSX_PAT }}
+
       - name: Publish to Open VSX
         working-directory: packages/vscode-ext
         run: pnpm dlx ovsx publish porthawk.vsix -p ${{ secrets.OVSX_PAT }}
