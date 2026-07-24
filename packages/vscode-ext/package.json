@@ -3,6 +3,7 @@
   "displayName": "PortHawk",
   "description": "See every listening port on your machine and kill what shouldn't still be running",
   "version": "0.1.0",
+  "publisher": "YashK55",
   "type": "module",
   "engines": {
     "vscode": "^1.125.0"

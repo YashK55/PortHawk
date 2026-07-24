@@ -1,0 +1,53 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.17.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build workspace packages
+        run: pnpm run build
+
+      - name: Run unit tests
+        run: pnpm run test
+
+      - name: Publish core to npm
+        run: pnpm --filter @porthawk/core publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish CLI to npm
+        run: pnpm --filter porthawk publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Package VS Code extension
+        working-directory: packages/vscode-ext
+        run: pnpm dlx @vscode/vsce package --no-dependencies -o porthawk.vsix
+
+      - name: Publish to VS Code Marketplace
+        working-directory: packages/vscode-ext
+        run: pnpm dlx @vscode/vsce publish --packagePath porthawk.vsix -p ${{ secrets.VSCE_PAT }}
+
+      - name: Publish to Open VSX
+        working-directory: packages/vscode-ext
+        run: pnpm dlx ovsx publish porthawk.vsix -p ${{ secrets.OVSX_PAT }}
