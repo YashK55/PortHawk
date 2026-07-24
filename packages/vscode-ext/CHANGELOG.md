@@ -1,5 +1,13 @@
 # porthawk-vscode
 
+## 0.1.4
+
+### Patch Changes
+
+- 3261eb2: Fix the extension never activating: an explicit empty `activationEvents` array suppressed VS Code's automatic activation inference, so the sidebar never registered its data provider. Also add a Marketplace icon.
+- Updated dependencies [3261eb2]
+  - porthawk-core@0.1.4
+
 ## 0.1.3
 
 ### Patch Changes
