@@ -4,6 +4,7 @@
   "description": "See every listening port on your machine and kill what shouldn't still be running",
   "version": "0.1.3",
   "publisher": "YashK55",
+  "icon": "media/icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/YashK55/PortHawk.git"
@@ -24,7 +25,6 @@
     "kill port",
     "dev server"
   ],
-  "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
     "viewsContainers": {
