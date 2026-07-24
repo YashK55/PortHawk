@@ -2,6 +2,10 @@
   "name": "porthawk",
   "version": "0.1.1",
   "description": "See every port your machine is listening on and kill what shouldn't still be running",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YashK55/PortHawk.git"
+  },
   "type": "module",
   "bin": {
     "porthawk": "./dist/index.js"

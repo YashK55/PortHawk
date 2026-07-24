@@ -4,6 +4,10 @@
   "description": "See every listening port on your machine and kill what shouldn't still be running",
   "version": "0.1.1",
   "publisher": "YashK55",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YashK55/PortHawk.git"
+  },
   "type": "module",
   "engines": {
     "vscode": "^1.125.0"
