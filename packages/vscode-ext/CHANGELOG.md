@@ -1,5 +1,15 @@
 # porthawk-vscode
 
+## 0.1.7
+
+### Patch Changes
+
+- 0bb53b1: Fix slow refreshes: the Windows and Unix process lookups now query the whole process table in a single call instead of spawning a fresh shell process per listening port (and another per parent process). Measured roughly a 10x speedup on a real machine with about 15 listening ports.
+- e1f1849: Add several UI/UX improvements: click a port row to open it in the browser directly, copy port/PID from the context menu, kill every process in a group at once, ignore a process so it stops showing up (with a command to undo), a quick command to toggle hiding system processes, and a "Refreshing…"/empty-state message in the sidebar so it's clear what's happening instead of looking blank. Also add a `--json` flag to `porthawk list` for scripting.
+- Updated dependencies [0bb53b1]
+- Updated dependencies [e1f1849]
+  - porthawk-core@0.1.7
+
 ## 0.1.6
 
 ### Patch Changes

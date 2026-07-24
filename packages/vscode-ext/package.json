@@ -2,7 +2,7 @@
   "name": "porthawk-vscode",
   "displayName": "PortHawk",
   "description": "See every listening port on your machine and kill what shouldn't still be running",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "publisher": "YashK55",
   "icon": "media/icon.png",
   "repository": {
