@@ -1,0 +1,125 @@
+{
+  "name": "portwatch-vscode",
+  "displayName": "PortWatch",
+  "description": "See every listening port on your machine and kill what shouldn't still be running",
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "vscode": "^1.125.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "portwatch",
+          "title": "PortWatch",
+          "icon": "media/activity-bar-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "portwatch": [
+        {
+          "id": "portwatchPorts",
+          "name": "Listening Ports"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "portwatch.refresh",
+        "title": "Refresh",
+        "category": "PortWatch",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "portwatch.killProcess",
+        "title": "Kill Process",
+        "category": "PortWatch",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "portwatch.openInBrowser",
+        "title": "Open in Browser",
+        "category": "PortWatch",
+        "icon": "$(globe)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "portwatch.refresh",
+          "when": "view == portwatchPorts",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "portwatch.openInBrowser",
+          "when": "view == portwatchPorts && viewItem == portEntry",
+          "group": "inline"
+        },
+        {
+          "command": "portwatch.killProcess",
+          "when": "view == portwatchPorts && viewItem == portEntry",
+          "group": "inline"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "PortWatch",
+      "properties": {
+        "portwatch.refreshInterval": {
+          "type": "number",
+          "default": 3000,
+          "minimum": 500,
+          "description": "How often to re-scan listening ports, in milliseconds, while the PortWatch view is visible."
+        },
+        "portwatch.autoTagAgentProcesses": {
+          "type": "boolean",
+          "default": true,
+          "description": "Tag ports likely opened by an AI coding agent's terminal with a distinct icon."
+        },
+        "portwatch.notifyOnNewOrphanedServer": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show a notification when a new likely agent-spawned server is detected."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run package",
+    "compile": "tsc --noEmit && eslint src && node esbuild.js",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch",
+    "watch": "npm-run-all2 -p watch:*",
+    "package": "tsc --noEmit && eslint src && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "pretest": "pnpm run compile-tests && pnpm run compile",
+    "test": "vscode-test",
+    "build": "node esbuild.js --production",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@portwatch/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.125.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^26.1.1",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.0.0",
+    "esbuild": "^0.28.1",
+    "eslint": "^9.39.3",
+    "npm-run-all2": "^9.0.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.1"
+  },
+  "license": "MIT"
+}
