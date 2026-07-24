@@ -1,6 +1,6 @@
 {
   "name": "@porthawk/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Detection and process control engine for PortHawk",
   "type": "module",
   "main": "./dist/index.cjs",
