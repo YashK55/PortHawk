@@ -86,7 +86,7 @@ export function App(): React.ReactElement {
 
   return (
     <Box flexDirection="column">
-      <Text dimColor>porthawk watch â€” â†‘/â†“ select, k kill, q quit</Text>
+      <Text dimColor>porthawk watch — ↑/↓ select, k kill, q quit</Text>
       <Box flexDirection="column" marginTop={1}>
         {ports.length === 0 && <Text dimColor>no listening ports found</Text>}
         {ports.map((port, index) => {
@@ -110,7 +110,7 @@ export function App(): React.ReactElement {
       )}
       {status === 'killing' && (
         <Box marginTop={1}>
-          <Text dimColor>killingâ€¦</Text>
+          <Text dimColor>killing…</Text>
         </Box>
       )}
       {message && status === 'idle' && (

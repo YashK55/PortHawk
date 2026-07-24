@@ -16,7 +16,10 @@ export function activate(context: vscode.ExtensionContext): void {
   let hasBaseline = false;
   let pollTimer: ReturnType<typeof setInterval> | undefined;
 
-  const treeProvider = new PorthawkTreeProvider(() => config().get('autoTagAgentProcesses', true));
+  const treeProvider = new PorthawkTreeProvider(
+    () => config().get('autoTagAgentProcesses', true),
+    () => config().get('hideSystemProcesses', true),
+  );
   const statusBar = new PorthawkStatusBar();
   const treeView = vscode.window.createTreeView('porthawkPorts', { treeDataProvider: treeProvider });
 
@@ -81,7 +84,10 @@ export function activate(context: vscode.ExtensionContext): void {
         stopPolling();
         startPolling();
       }
-      if (event.affectsConfiguration('porthawk.autoTagAgentProcesses')) {
+      if (
+        event.affectsConfiguration('porthawk.autoTagAgentProcesses') ||
+        event.affectsConfiguration('porthawk.hideSystemProcesses')
+      ) {
         treeProvider.refreshDecorations();
       }
     }),

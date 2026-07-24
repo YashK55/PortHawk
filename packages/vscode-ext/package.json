@@ -28,7 +28,7 @@
   "activationEvents": [
     "onView:porthawkPorts"
   ],
-  "main": "./dist/extension.js",
+  "main": "./dist/extension.cjs",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
@@ -106,6 +106,11 @@
           "type": "boolean",
           "default": false,
           "description": "Show a notification when a new likely agent-spawned server is detected."
+        },
+        "porthawk.hideSystemProcesses": {
+          "type": "boolean",
+          "default": true,
+          "description": "Hide well-known OS/service processes (svchost, System, systemd, launchd, and similar) from the list, showing only ports likely opened by dev servers and other user processes. Detection itself is unaffected — this only changes what's displayed here; `porthawk list` on the CLI always shows everything."
         }
       }
     }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { classifyOrigin } from '../src/classify.js';
+import { classifyOrigin, isSystemProcess } from '../src/classify.js';
 
 describe('classifyOrigin', () => {
   it('tags a known agent CLI process directly', () => {
@@ -24,5 +24,24 @@ describe('classifyOrigin', () => {
     expect(
       classifyOrigin({ pid: 4, processName: 'nginx', command: 'nginx', parentName: 'init' }),
     ).toBe('unknown');
+  });
+});
+
+describe('isSystemProcess', () => {
+  it('recognizes common Windows system processes', () => {
+    expect(isSystemProcess('svchost.exe')).toBe(true);
+    expect(isSystemProcess('System')).toBe(true);
+    expect(isSystemProcess('lsass.exe')).toBe(true);
+  });
+
+  it('recognizes common Unix system daemons', () => {
+    expect(isSystemProcess('systemd')).toBe(true);
+    expect(isSystemProcess('launchd')).toBe(true);
+  });
+
+  it('does not flag ordinary dev-server processes', () => {
+    expect(isSystemProcess('node.exe')).toBe(false);
+    expect(isSystemProcess('python3')).toBe(false);
+    expect(isSystemProcess('nginx')).toBe(false);
   });
 });

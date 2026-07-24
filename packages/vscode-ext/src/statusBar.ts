@@ -13,7 +13,7 @@ export class PorthawkStatusBar {
 
   setCount(count: number): void {
     this.item.text = `$(radio-tower) ${count} server${count === 1 ? '' : 's'}`;
-    this.item.tooltip = 'PortHawk â€” click to view listening ports';
+    this.item.tooltip = 'PortHawk — click to view listening ports';
   }
 
   dispose(): void {

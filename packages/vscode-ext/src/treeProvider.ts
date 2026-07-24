@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import type { Origin, PortInfo } from 'porthawk-core';
+import { isSystemProcess, type Origin, type PortInfo } from 'porthawk-core';
 
 const originIconId: Record<Origin, string> = {
   agent: 'circuit-board',
@@ -25,7 +25,7 @@ export class PortEntryItem extends vscode.TreeItem {
     tagOrigin: boolean,
   ) {
     super(`:${port.port}`, vscode.TreeItemCollapsibleState.None);
-    this.description = `${port.protocol} Â· pid ${port.pid}`;
+    this.description = `${port.protocol} · pid ${port.pid}`;
     this.tooltip = port.command || port.processName;
     this.iconPath = new vscode.ThemeIcon(tagOrigin ? originIconId[port.origin] : 'circle-outline');
     this.contextValue = 'portEntry';
@@ -40,7 +40,10 @@ export class PorthawkTreeProvider implements vscode.TreeDataProvider<PorthawkTre
 
   private ports: PortInfo[] = [];
 
-  constructor(private readonly shouldTagOrigin: () => boolean) {}
+  constructor(
+    private readonly shouldTagOrigin: () => boolean,
+    private readonly shouldHideSystemProcesses: () => boolean,
+  ) {}
 
   setPorts(ports: PortInfo[]): void {
     this.ports = ports;
@@ -57,7 +60,10 @@ export class PorthawkTreeProvider implements vscode.TreeDataProvider<PorthawkTre
 
   getChildren(element?: PorthawkTreeItem): PorthawkTreeItem[] {
     if (!element) {
-      return groupByProcessName(this.ports).map(([name, ports]) => new ProcessGroupItem(name, ports));
+      const visiblePorts = this.shouldHideSystemProcesses()
+        ? this.ports.filter((port) => !isSystemProcess(port.processName))
+        : this.ports;
+      return groupByProcessName(visiblePorts).map(([name, ports]) => new ProcessGroupItem(name, ports));
     }
 
     if (element instanceof ProcessGroupItem) {

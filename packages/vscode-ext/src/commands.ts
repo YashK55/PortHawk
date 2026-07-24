@@ -15,8 +15,8 @@ async function pickPort(getPorts: () => PortInfo[]): Promise<PortInfo | undefine
       .slice()
       .sort((a, b) => a.port - b.port)
       .map((port) => ({
-        label: `:${port.port} â€” ${port.processName || 'unknown'}`,
-        description: `pid ${port.pid} Â· ${port.origin}`,
+        label: `:${port.port} — ${port.processName || 'unknown'}`,
+        description: `pid ${port.pid} · ${port.origin}`,
         port,
       })),
     { placeHolder: 'Select a listening port' },
