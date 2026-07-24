@@ -1,0 +1,35 @@
+{
+  "name": "portwatch",
+  "version": "0.1.0",
+  "description": "See every port your machine is listening on and kill what shouldn't still be running",
+  "type": "module",
+  "bin": {
+    "portwatch": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.7.0",
+    "@portwatch/core": "workspace:*",
+    "cli-table3": "^0.6.5",
+    "commander": "^15.0.0",
+    "ink": "^6.8.0",
+    "picocolors": "^1.1.1",
+    "react": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "@types/react": "^19.2.8",
+    "ink-testing-library": "^4.0.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9"
+  },
+  "license": "MIT"
+}
