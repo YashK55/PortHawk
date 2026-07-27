@@ -1,6 +1,6 @@
 {
   "name": "porthawk",
-  "version": "0.1.7",
+  "version": "0.2.0",
   "description": "See every port your machine is listening on and kill what shouldn't still be running",
   "repository": {
     "type": "git",

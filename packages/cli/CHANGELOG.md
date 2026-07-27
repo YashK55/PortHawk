@@ -1,5 +1,11 @@
 # porthawk
 
+## 0.2.0
+
+### Patch Changes
+
+- porthawk-core@0.2.0
+
 ## 0.1.7
 
 ### Patch Changes

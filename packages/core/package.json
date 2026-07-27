@@ -1,6 +1,6 @@
 {
   "name": "porthawk-core",
-  "version": "0.1.7",
+  "version": "0.2.0",
   "description": "Detection and process control engine for PortHawk",
   "repository": {
     "type": "git",
