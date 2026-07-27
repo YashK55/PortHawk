@@ -26,7 +26,8 @@
     "dev server"
   ],
   "activationEvents": [
-    "onView:porthawkPorts"
+    "onView:porthawkPorts",
+    "onCommand:porthawk.openDashboard"
   ],
   "main": "./dist/extension.cjs",
   "contributes": {
@@ -53,6 +54,12 @@
         "title": "Refresh",
         "category": "PortHawk",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "porthawk.openDashboard",
+        "title": "Open Dashboard",
+        "category": "PortHawk",
+        "icon": "$(dashboard)"
       },
       {
         "command": "porthawk.killProcess",
@@ -97,14 +104,82 @@
         "command": "porthawk.toggleHideSystemProcesses",
         "title": "Toggle Hide System Processes",
         "category": "PortHawk"
+      },
+      {
+        "command": "porthawk.groupByProcess",
+        "title": "Group by Process",
+        "category": "PortHawk",
+        "icon": "$(list-tree)"
+      },
+      {
+        "command": "porthawk.showFlatList",
+        "title": "Show as Flat List",
+        "category": "PortHawk",
+        "icon": "$(list-flat)"
+      }
+    ],
+    "viewsWelcome": [
+      {
+        "view": "porthawkPorts",
+        "contents": "No listening ports were found.\n[Open Dashboard](command:porthawk.openDashboard)\nThe dashboard shows the same ports in a filterable, sortable table.\n[Refresh](command:porthawk.refresh)",
+        "when": "porthawk.treeEmptyReason == 'none'"
+      },
+      {
+        "view": "porthawkPorts",
+        "contents": "Every listening port is hidden by your current filters.\n[Show System Processes](command:porthawk.toggleHideSystemProcesses)\n[Clear Ignored Processes](command:porthawk.clearIgnoredProcesses)\nYou can also open the dashboard, which applies the same filters.\n[Open Dashboard](command:porthawk.openDashboard)",
+        "when": "porthawk.treeEmptyReason == 'filtered'"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "porthawk.openDashboard",
+        "key": "ctrl+alt+p",
+        "mac": "cmd+alt+p"
+      },
+      {
+        "command": "porthawk.refresh",
+        "key": "ctrl+alt+r",
+        "mac": "cmd+alt+r",
+        "when": "focusedView == porthawkPorts || activeWebviewPanelId == porthawkDashboard"
+      },
+      {
+        "command": "porthawk.killProcess",
+        "key": "ctrl+alt+k",
+        "mac": "cmd+alt+k",
+        "when": "focusedView == porthawkPorts"
       }
     ],
     "menus": {
       "view/title": [
         {
+          "command": "porthawk.openDashboard",
+          "when": "view == porthawkPorts",
+          "group": "navigation@1"
+        },
+        {
+          "command": "porthawk.showFlatList",
+          "when": "view == porthawkPorts && porthawk.groupByProcess",
+          "group": "navigation@2"
+        },
+        {
+          "command": "porthawk.groupByProcess",
+          "when": "view == porthawkPorts && !porthawk.groupByProcess",
+          "group": "navigation@2"
+        },
+        {
           "command": "porthawk.refresh",
           "when": "view == porthawkPorts",
-          "group": "navigation"
+          "group": "navigation@3"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "porthawk.showFlatList",
+          "when": "porthawk.groupByProcess"
+        },
+        {
+          "command": "porthawk.groupByProcess",
+          "when": "!porthawk.groupByProcess"
         }
       ],
       "view/item/context": [

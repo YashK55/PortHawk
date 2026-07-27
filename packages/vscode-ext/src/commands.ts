@@ -2,6 +2,14 @@ import * as vscode from 'vscode';
 import { killProcess, type PortInfo } from 'porthawk-core';
 import { PortEntryItem, ProcessGroupItem } from './treeProvider.js';
 
+// How a command figures out which port it's acting on. `getSelectedPort` lets a
+// keybinding act on whatever is highlighted in the tree, since a keypress —
+// unlike a context-menu click — passes no tree item along.
+export interface PortAccess {
+  getPorts: () => PortInfo[];
+  getSelectedPort: () => PortInfo | undefined;
+}
+
 async function pickPort(getPorts: () => PortInfo[]): Promise<PortInfo | undefined> {
   const ports = getPorts();
 
@@ -25,11 +33,17 @@ async function pickPort(getPorts: () => PortInfo[]): Promise<PortInfo | undefine
   return picked?.port;
 }
 
-function resolvePort(item: unknown, getPorts: () => PortInfo[]): Promise<PortInfo | undefined> {
+function resolvePort(item: unknown, access: PortAccess): Promise<PortInfo | undefined> {
   if (item instanceof PortEntryItem) {
     return Promise.resolve(item.port);
   }
-  return pickPort(getPorts);
+
+  const selected = access.getSelectedPort();
+  if (selected) {
+    return Promise.resolve(selected);
+  }
+
+  return pickPort(access.getPorts);
 }
 
 function resolveProcessName(item: unknown): string | undefined {
@@ -46,60 +60,67 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+// Exported so the dashboard webview kills through the exact same confirmation
+// prompt as the tree view — the webview never reaches killProcess() directly.
+export async function confirmAndKillPort(target: PortInfo, refresh: () => Promise<void>): Promise<void> {
+  const confirmed = await vscode.window.showWarningMessage(
+    `Kill ${target.processName || 'unknown process'} (pid ${target.pid}) listening on port ${target.port}?`,
+    { modal: true },
+    'Kill Process',
+  );
+  if (confirmed !== 'Kill Process') {
+    return;
+  }
+
+  try {
+    await killProcess(target.pid);
+    await refresh();
+  } catch (error) {
+    void vscode.window.showErrorMessage(`PortHawk: ${errorMessage(error)}`);
+  }
+}
+
+export async function openPortInBrowser(target: PortInfo): Promise<void> {
+  await vscode.env.openExternal(vscode.Uri.parse(`http://localhost:${target.port}`));
+}
+
 export function registerKillCommand(
   context: vscode.ExtensionContext,
-  getPorts: () => PortInfo[],
+  access: PortAccess,
   refresh: () => Promise<void>,
 ): void {
   context.subscriptions.push(
     vscode.commands.registerCommand('porthawk.killProcess', async (item?: unknown) => {
-      const target = await resolvePort(item, getPorts);
-      if (!target) {
-        return;
-      }
-
-      const confirmed = await vscode.window.showWarningMessage(
-        `Kill ${target.processName || 'unknown process'} (pid ${target.pid}) listening on port ${target.port}?`,
-        { modal: true },
-        'Kill Process',
-      );
-      if (confirmed !== 'Kill Process') {
-        return;
-      }
-
-      try {
-        await killProcess(target.pid);
-        await refresh();
-      } catch (error) {
-        void vscode.window.showErrorMessage(`PortHawk: ${errorMessage(error)}`);
+      const target = await resolvePort(item, access);
+      if (target) {
+        await confirmAndKillPort(target, refresh);
       }
     }),
   );
 }
 
-export function registerOpenInBrowserCommand(context: vscode.ExtensionContext, getPorts: () => PortInfo[]): void {
+export function registerOpenInBrowserCommand(context: vscode.ExtensionContext, access: PortAccess): void {
   context.subscriptions.push(
     vscode.commands.registerCommand('porthawk.openInBrowser', async (item?: unknown) => {
-      const target = await resolvePort(item, getPorts);
-      if (!target) {
-        return;
+      const target = await resolvePort(item, access);
+      if (target) {
+        await openPortInBrowser(target);
       }
-      await vscode.env.openExternal(vscode.Uri.parse(`http://localhost:${target.port}`));
     }),
   );
 }
 
-export function registerCopyCommands(context: vscode.ExtensionContext, getPorts: () => PortInfo[]): void {
+export function registerCopyCommands(context: vscode.ExtensionContext, access: PortAccess): void {
   context.subscriptions.push(
     vscode.commands.registerCommand('porthawk.copyPort', async (item?: unknown) => {
-      const target = await resolvePort(item, getPorts);
+      const target = await resolvePort(item, access);
       if (!target) {
         return;
       }
       await vscode.env.clipboard.writeText(String(target.port));
     }),
     vscode.commands.registerCommand('porthawk.copyPid', async (item?: unknown) => {
-      const target = await resolvePort(item, getPorts);
+      const target = await resolvePort(item, access);
       if (!target) {
         return;
       }

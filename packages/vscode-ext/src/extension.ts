@@ -1,8 +1,12 @@
 import * as vscode from 'vscode';
 import { getListeningPorts, type PortInfo } from 'porthawk-core';
-import { PorthawkTreeProvider } from './treeProvider.js';
+import { PorthawkTreeProvider, PortEntryItem } from './treeProvider.js';
 import { PorthawkStatusBar } from './statusBar.js';
+import { portId } from './portDiff.js';
+import { DashboardPanel } from './webview/dashboardPanel.js';
 import {
+  confirmAndKillPort,
+  openPortInBrowser,
   registerCopyCommands,
   registerIgnoreCommands,
   registerKillCommand,
@@ -11,9 +15,7 @@ import {
   registerToggleHideSystemProcessesCommand,
 } from './commands.js';
 
-function portKey(port: PortInfo): string {
-  return `${port.pid}:${port.port}:${port.protocol}`;
-}
+const GROUPING_STATE_KEY = 'porthawk.groupByProcess';
 
 export function activate(context: vscode.ExtensionContext): void {
   const config = () => vscode.workspace.getConfiguration('porthawk');
@@ -21,22 +23,25 @@ export function activate(context: vscode.ExtensionContext): void {
   let ports: PortInfo[] = [];
   let knownKeys = new Set<string>();
   let hasBaseline = false;
+  let hasScanned = false;
   let pollTimer: ReturnType<typeof setInterval> | undefined;
+  let groupByProcess = context.workspaceState.get<boolean>(GROUPING_STATE_KEY, true);
 
   const treeProvider = new PorthawkTreeProvider(
     () => config().get('autoTagAgentProcesses', true),
     () => config().get('hideSystemProcesses', true),
     () => config().get('ignoredProcessNames', []),
+    () => groupByProcess,
   );
   const statusBar = new PorthawkStatusBar();
   const treeView = vscode.window.createTreeView('porthawkPorts', { treeDataProvider: treeProvider });
 
   function notifyNewOrphans(current: PortInfo[]): void {
-    const currentKeys = new Set(current.map(portKey));
+    const currentKeys = new Set(current.map(portId));
 
     if (hasBaseline && config().get('notifyOnNewOrphanedServer', false)) {
       for (const port of current) {
-        if (port.origin === 'agent' && !knownKeys.has(portKey(port))) {
+        if (port.origin === 'agent' && !knownKeys.has(portId(port))) {
           void vscode.window.showInformationMessage(
             `PortHawk: new agent-spawned server on port ${port.port} (${port.processName || 'unknown'}, pid ${port.pid})`,
           );
@@ -48,34 +53,62 @@ export function activate(context: vscode.ExtensionContext): void {
     hasBaseline = true;
   }
 
-  function updateTreeMessage(): void {
-    const total = treeProvider.getTotalCount();
-    const visible = treeProvider.getVisibleCount();
-
-    if (total === 0) {
-      treeView.message = 'No listening ports found.';
-    } else if (visible === 0) {
-      treeView.message = 'All ports are hidden by hideSystemProcesses or ignored processes — adjust in Settings.';
-    } else {
-      treeView.message = undefined;
+  // The welcome view (contributes.viewsWelcome) takes over whenever the tree has
+  // no children. This key picks which of the two empty states it explains, so
+  // "nothing is listening" and "everything is filtered out" stay distinguishable.
+  function updateEmptyStateContext(): void {
+    // Before the first scan lands the tree is empty but nothing is known yet,
+    // so claiming "nothing is listening" would be wrong. Staying blank leaves
+    // the view's native progress spinner as the only thing on screen.
+    let reason = '';
+    if (hasScanned) {
+      if (treeProvider.getTotalCount() === 0) {
+        reason = 'none';
+      } else if (treeProvider.getVisibleCount() === 0) {
+        reason = 'filtered';
+      }
     }
+    void vscode.commands.executeCommand('setContext', 'porthawk.treeEmptyReason', reason);
   }
 
-  async function refresh(): Promise<void> {
-    treeView.message = 'Refreshing…';
+  function updateGroupingContext(): void {
+    void vscode.commands.executeCommand('setContext', 'porthawk.groupByProcess', groupByProcess);
+  }
 
+  async function setGrouping(next: boolean): Promise<void> {
+    groupByProcess = next;
+    await context.workspaceState.update(GROUPING_STATE_KEY, next);
+    updateGroupingContext();
+    treeProvider.refreshDecorations();
+  }
+
+  // A keypress carries no tree item, unlike a context-menu click, so commands
+  // fall back to whatever the tree currently has highlighted.
+  function getSelectedPort(): PortInfo | undefined {
+    for (const item of treeView.selection) {
+      if (item instanceof PortEntryItem) {
+        return item.port;
+      }
+    }
+    return undefined;
+  }
+
+  const portAccess = { getPorts: () => ports, getSelectedPort };
+
+  async function refresh(): Promise<void> {
     try {
-      ports = await getListeningPorts();
+      ports = await vscode.window.withProgress({ location: { viewId: 'porthawkPorts' } }, () => getListeningPorts());
     } catch (error) {
-      treeView.message = undefined;
       void vscode.window.showErrorMessage(`PortHawk: ${error instanceof Error ? error.message : String(error)}`);
       return;
     }
 
+    hasScanned = true;
     treeProvider.setPorts(ports);
     statusBar.setCount(ports.length);
     notifyNewOrphans(ports);
-    updateTreeMessage();
+    updateEmptyStateContext();
+    DashboardPanel.pushPorts(treeProvider.getVisiblePorts());
   }
 
   function startPolling(): void {
@@ -94,15 +127,23 @@ export function activate(context: vscode.ExtensionContext): void {
     pollTimer = undefined;
   }
 
+  // Either surface being on screen is reason enough to keep scanning; neither
+  // being on screen means nobody can see the result, so stop.
+  function syncPollingToVisibility(): void {
+    if (treeView.visible || DashboardPanel.isVisible) {
+      startPolling();
+    } else {
+      stopPolling();
+    }
+  }
+
   context.subscriptions.push(
     treeView,
     treeView.onDidChangeVisibility((event) => {
       if (event.visible) {
         void refresh();
-        startPolling();
-      } else {
-        stopPolling();
       }
+      syncPollingToVisibility();
     }),
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration('porthawk.refreshInterval') && pollTimer) {
@@ -117,20 +158,35 @@ export function activate(context: vscode.ExtensionContext): void {
         event.affectsConfiguration('porthawk.ignoredProcessNames')
       ) {
         treeProvider.refreshDecorations();
-        updateTreeMessage();
+        updateEmptyStateContext();
+        DashboardPanel.pushPorts(treeProvider.getVisiblePorts());
       }
     }),
     vscode.commands.registerCommand('porthawk.refresh', () => void refresh()),
+    vscode.commands.registerCommand('porthawk.openDashboard', () => {
+      DashboardPanel.createOrShow({
+        getPorts: () => treeProvider.getVisiblePorts(),
+        killPort: (port) => confirmAndKillPort(port, refresh),
+        openPortInBrowser,
+        onVisibilityChange: syncPollingToVisibility,
+      });
+      syncPollingToVisibility();
+      void refresh();
+    }),
+    vscode.commands.registerCommand('porthawk.groupByProcess', () => void setGrouping(true)),
+    vscode.commands.registerCommand('porthawk.showFlatList', () => void setGrouping(false)),
     { dispose: () => statusBar.dispose() },
   );
 
-  registerKillCommand(context, () => ports, refresh);
-  registerOpenInBrowserCommand(context, () => ports);
-  registerCopyCommands(context, () => ports);
+  registerKillCommand(context, portAccess, refresh);
+  registerOpenInBrowserCommand(context, portAccess);
+  registerCopyCommands(context, portAccess);
   registerKillProcessGroupCommand(context, refresh);
   registerIgnoreCommands(context);
   registerToggleHideSystemProcessesCommand(context);
 
+  updateGroupingContext();
+  updateEmptyStateContext();
   void refresh();
 }
 

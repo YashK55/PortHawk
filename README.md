@@ -57,7 +57,8 @@ porthawk watch
 
 - **Cross-platform port detection** — Windows, macOS, and Linux, with native OS commands as a fallback if the primary detection method comes up empty.
 - **Agent-aware classification** — every listening port is tagged `agent`, `manual`, or `unknown` depending on whether its process traces back to a known coding-agent or editor terminal, not just a generic PID list.
-- **VS Code sidebar + status bar** — a dedicated Activity Bar view grouped by process name, plus a live status bar count, both native to your editor's theme.
+- **VS Code sidebar + dashboard + status bar** — a dedicated Activity Bar view that toggles between grouping by process and a flat list sorted by port, a filterable/sortable dashboard panel, and a live status bar count, all native to your editor's theme.
+- **Keyboard-first** — `Ctrl+Alt+P` / `Cmd+Alt+P` opens the dashboard from anywhere; `Ctrl+Alt+R` refreshes and `Ctrl+Alt+K` kills the selected port while the PortHawk view is focused. Every action is also in the command palette under `PortHawk:`.
 - **`porthawk watch`** — a live, keyboard-driven terminal UI (arrow keys to select, `k` to kill, `q` to quit), not just a static table.
 - **Confirmation before every kill** — in both the CLI and the extension, so nothing gets terminated on a stray keypress or click.
 - **No telemetry, ever, by default** — nothing phones home. If usage analytics are ever added, they'll be opt-in and clearly disclosed.

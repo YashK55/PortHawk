@@ -6,14 +6,16 @@ export class PorthawkStatusBar {
   constructor() {
     this.item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
     this.item.name = 'PortHawk';
-    this.item.command = 'workbench.view.extension.porthawk';
+    // The dashboard is the fuller view, so it's the click target; the sidebar
+    // is still one click away from its own Activity Bar icon.
+    this.item.command = 'porthawk.openDashboard';
     this.setCount(0);
     this.item.show();
   }
 
   setCount(count: number): void {
     this.item.text = `$(radio-tower) ${count} server${count === 1 ? '' : 's'}`;
-    this.item.tooltip = 'PortHawk — click to view listening ports';
+    this.item.tooltip = 'PortHawk — click to open the dashboard';
   }
 
   dispose(): void {
